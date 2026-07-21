@@ -1,0 +1,40 @@
+[package]
+name = "posse_vault"
+version = "0.1.0"
+description = "POSSE conditional group-purchase vault: chip in, buy only on fixed terms, refund, hold, dispose, settle by share"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "posse_vault"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+custom-heap = []
+custom-panic = []
+anchor-debug = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build", "anchor-spl/token_2022"]
+mut-i1 = []
+mut-i2 = []
+mut-i3 = []
+mut-i4 = []
+mut-i5 = []
+mut-i6 = []
+mut-i7 = []
+mut-i8 = []
+mut-i9 = []
+mut-i10 = []
+mut-i11 = []
+mut-i12 = []
+
+[dependencies]
+anchor-lang = { version = "=0.31.1", features = ["init-if-needed", "event-cpi"] }
+anchor-spl = { version = "=0.31.1", default-features = false, features = ["token", "associated_token"] }
+
+[lints.rust]
+deprecated = "allow"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }
