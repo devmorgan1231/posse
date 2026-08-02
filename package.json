@@ -1,0 +1,29 @@
+{
+  "name": "posse",
+  "private": true,
+  "version": "0.1.0",
+  "description": "POSSE conditional group-purchase vault on Solana: Anchor program, TypeScript client, indexer decoding layer",
+  "license": "MIT",
+  "scripts": {
+    "build": "anchor build --no-idl -- --tools-version v1.52 && mkdir -p target/idl target/types && anchor idl build -o target/idl/posse_vault.json -t target/types/posse_vault.ts",
+    "test": "npm run test:program && npm run test:sdk",
+    "test:program": "tsx --test tests/program/litesvm.test.ts",
+    "test:sdk": "tsx --test tests/sdk/*.test.ts",
+    "test:mutation": "bash scripts/mutation-control.sh",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "sync-idl": "bash scripts/sync-idl.sh"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.31.1",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.98.4",
+    "bs58": "6.0.0"
+  },
+  "devDependencies": {
+    "@solana/kit": "8.4.0",
+    "@types/node": "22.18.0",
+    "litesvm": "1.5.0",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}
