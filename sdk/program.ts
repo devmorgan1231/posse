@@ -80,3 +80,24 @@ export function rawIx(name: string, accounts: Record<string, PublicKey | null | 
   const data = coder.instruction.encode(name, args);
   return new TransactionInstruction({ programId: POSSE_VAULT_PROGRAM_ID, keys, data });
 }
+
+export const bn = (n: bigint | number) => new BN(n.toString());
+
+function normalize(v: unknown): unknown {
+  if (v === null || v === undefined) return v;
+  if (BN.isBN(v)) return BigInt((v as BN).toString());
+  if (v instanceof PublicKey || (typeof v === "object" && v !== null && "toBase58" in v && typeof (v as PublicKey).toBase58 === "function")) {
+    return (v as PublicKey).toBase58();
+  }
+  if (Array.isArray(v)) return v.map(normalize);
+  if (v instanceof Uint8Array) return v;
+  if (typeof v === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(v as Record<string, unknown>)) {
+      if (k === "reserved") continue;
+      out[k.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase())] = normalize(x);
+    }
+    return out;
+  }
+  return v;
+}
