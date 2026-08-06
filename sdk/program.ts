@@ -66,3 +66,17 @@ const DEFAULTS: Record<string, () => PublicKey> = {
   token_program: () => TOKEN_PROGRAM_ID,
   associated_token_program: () => ASSOCIATED_TOKEN_PROGRAM_ID,
 };
+
+export function rawIx(name: string, accounts: Record<string, PublicKey | null | undefined>, args: Record<string, unknown> = {}): TransactionInstruction {
+  const ix = IX_BY_NAME.get(name);
+  if (!ix) throw new Error(`unknown instruction ${name}`);
+  const keys: AccountMeta[] = ix.accounts.map((a) => {
+    const given = accounts[a.name];
+    if (given === null && a.optional) return { pubkey: POSSE_VAULT_PROGRAM_ID, isSigner: false, isWritable: false };
+    const pk = given ?? (a.address ? new PublicKey(a.address) : DEFAULTS[a.name]?.());
+    if (!pk) throw new Error(`${name}: account ${a.name} missing`);
+    return { pubkey: pk, isSigner: !!a.signer, isWritable: !!a.writable };
+  });
+  const data = coder.instruction.encode(name, args);
+  return new TransactionInstruction({ programId: POSSE_VAULT_PROGRAM_ID, keys, data });
+}
