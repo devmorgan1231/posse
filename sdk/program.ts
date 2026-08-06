@@ -29,3 +29,10 @@ export function statusName(raw: number): PosseStatusName {
   if (!s) throw new Error(`unknown posse status ${raw}`);
   return s;
 }
+
+const enc = (s: string) => new TextEncoder().encode(s);
+export function u64le(n: bigint | number): Uint8Array {
+  const b = new Uint8Array(8);
+  new DataView(b.buffer).setBigUint64(0, BigInt(n), true);
+  return b;
+}
