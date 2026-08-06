@@ -36,3 +36,18 @@ export function u64le(n: bigint | number): Uint8Array {
   new DataView(b.buffer).setBigUint64(0, BigInt(n), true);
   return b;
 }
+const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+const bytesEqual = (a: Uint8Array, b: Uint8Array) => a.length === b.length && a.every((x, i) => x === b[i]);
+const find = (seeds: Uint8Array[], program = POSSE_VAULT_PROGRAM_ID) => PublicKey.findProgramAddressSync(seeds, program);
+
+export const pda = {
+  config: () => find([enc("config")])[0],
+  posse: (organizer: PublicKey, nonce: bigint | number) => find([enc("posse"), organizer.toBytes(), u64le(nonce)])[0],
+  vault: (posse: PublicKey) => find([enc("vault"), posse.toBytes()])[0],
+  contribution: (posse: PublicKey, contributor: PublicKey) => find([enc("contribution"), posse.toBytes(), contributor.toBytes()])[0],
+  listing: (seller: PublicKey, mint: PublicKey) => find([enc("listing"), seller.toBytes(), mint.toBytes()])[0],
+  disposition: (posse: PublicKey) => find([enc("disposition"), posse.toBytes()])[0],
+  bidEscrow: (posse: PublicKey) => find([enc("bid-escrow"), posse.toBytes()])[0],
+  eventAuthority: () => find([enc("__event_authority")])[0],
+  programData: () => find([POSSE_VAULT_PROGRAM_ID.toBytes()], BPF_LOADER_UPGRADEABLE_ID)[0],
+};
