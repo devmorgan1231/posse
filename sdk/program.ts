@@ -51,3 +51,18 @@ export const pda = {
   eventAuthority: () => find([enc("__event_authority")])[0],
   programData: () => find([POSSE_VAULT_PROGRAM_ID.toBytes()], BPF_LOADER_UPGRADEABLE_ID)[0],
 };
+
+export const ata = (owner: PublicKey, mint: PublicKey) => getAssociatedTokenAddressSync(mint, owner, true, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+
+type IdlIxAccount = { name: string; writable?: boolean; signer?: boolean; optional?: boolean; address?: string; pda?: unknown };
+type IdlIx = { name: string; accounts: IdlIxAccount[]; args: { name: string }[] };
+const IX_BY_NAME = new Map<string, IdlIx>((IDL.instructions as unknown as IdlIx[]).map((i) => [i.name, i]));
+
+const DEFAULTS: Record<string, () => PublicKey> = {
+  event_authority: pda.eventAuthority,
+  program: () => POSSE_VAULT_PROGRAM_ID,
+  config: pda.config,
+  system_program: () => SYSTEM_PROGRAM_ID,
+  token_program: () => TOKEN_PROGRAM_ID,
+  associated_token_program: () => ASSOCIATED_TOKEN_PROGRAM_ID,
+};
