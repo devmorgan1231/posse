@@ -143,3 +143,12 @@ export interface PosseAccount {
   finalClaims: number;
   vaultRent: bigint;
 }
+export interface ContributionAccount {
+  posse: string;
+  contributor: string;
+  amountLamports: bigint;
+  firstAt: bigint;
+  returnedClaimed: boolean;
+  finalClaimed: boolean;
+  bump: number;
+}
