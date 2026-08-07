@@ -101,3 +101,13 @@ function normalize(v: unknown): unknown {
   }
   return v;
 }
+
+export interface ConfigAccount {
+  admin: string;
+  feeWallet: string;
+  executionFeeBps: number;
+  settlementFeeBps: number;
+  maxFeeBps: number;
+  paused: boolean;
+  bump: number;
+}
