@@ -152,3 +152,12 @@ export interface ContributionAccount {
   finalClaimed: boolean;
   bump: number;
 }
+export interface ListingAccount {
+  seller: string;
+  mint: string;
+  askLamports: bigint;
+  status: number;
+  createdAt: bigint;
+  escrowBump: number;
+  bump: number;
+}
