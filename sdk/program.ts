@@ -111,3 +111,35 @@ export interface ConfigAccount {
   paused: boolean;
   bump: number;
 }
+export interface PosseAccount {
+  organizer: string;
+  nonce: bigint;
+  vaultBump: number;
+  bump: number;
+  mint: string;
+  seller: string;
+  royaltyRecipient: string;
+  royaltyBps: number;
+  targetLamports: bigint;
+  maxPriceLamports: bigint;
+  feeBps: number;
+  createdAt: bigint;
+  closesAt: bigint;
+  status: number;
+  raisedLamports: bigint;
+  contributorCount: number;
+  exitKind: number;
+  exitDay: number;
+  exitPriceLamports: bigint;
+  exitHours: number;
+  priceLamports: bigint;
+  execFeeLamports: bigint;
+  returnedLamports: bigint;
+  boughtAt: bigint;
+  sharesIssuedAt: bigint;
+  custodyRentPayer: string;
+  settleFeeBps: number;
+  fundedAt: bigint;
+  finalClaims: number;
+  vaultRent: bigint;
+}
