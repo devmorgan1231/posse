@@ -181,3 +181,10 @@ export interface DispositionAccount {
   bump: number;
   rentPayer: string;
 }
+export interface AccountTypes {
+  Config: ConfigAccount;
+  Posse: PosseAccount;
+  Contribution: ContributionAccount;
+  Listing: ListingAccount;
+  Disposition: DispositionAccount;
+}
