@@ -161,3 +161,23 @@ export interface ListingAccount {
   escrowBump: number;
   bump: number;
 }
+export interface DispositionAccount {
+  posse: string;
+  kind: number;
+  startsAt: bigint;
+  endsAt: bigint;
+  reserveLamports: bigint;
+  highBidLamports: bigint;
+  highBidder: string;
+  bidCount: number;
+  bidEscrowBump: number;
+  settled: boolean;
+  saleLamports: bigint;
+  royaltyLamports: bigint;
+  settleFeeLamports: bigint;
+  netLamports: bigint;
+  buyer: string;
+  settledAt: bigint;
+  bump: number;
+  rentPayer: string;
+}
