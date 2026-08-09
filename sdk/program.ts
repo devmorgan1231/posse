@@ -188,3 +188,13 @@ export interface AccountTypes {
   Listing: ListingAccount;
   Disposition: DispositionAccount;
 }
+export type AccountName = keyof AccountTypes;
+
+const ACCOUNT_DISC = new Map<string, AccountName>(
+  (IDL.accounts ?? []).map((a) => [hex(Uint8Array.from((a as unknown as { discriminator: number[] }).discriminator)), a.name as AccountName]),
+);
+
+export function accountKind(data: Uint8Array): AccountName | null {
+  if (data.length < 8) return null;
+  return ACCOUNT_DISC.get(hex(data.subarray(0, 8))) ?? null;
+}
