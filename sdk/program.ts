@@ -217,3 +217,25 @@ export function decodeEventIxData(data: Uint8Array): { name: string; data: Recor
   if (!ev) return null;
   return { name: ev.name, data: normalize(ev.data) as Record<string, unknown> };
 }
+
+type TxLike = {
+  transaction: { message: { staticAccountKeys?: PublicKey[]; accountKeys?: PublicKey[]; getAccountKeys?: (a?: unknown) => { get(i: number): PublicKey | undefined } } };
+  meta: { innerInstructions?: { index: number; instructions: { programIdIndex: number; data: string }[] }[] | null; loadedAddresses?: { writable: PublicKey[]; readonly: PublicKey[] } } | null;
+};
+
+export function parseEvents(tx: TxLike): DecodedEvent[] {
+  const msg = tx.transaction.message;
+  const statics = msg.staticAccountKeys ?? msg.accountKeys ?? [];
+  const loaded = tx.meta?.loadedAddresses;
+  const keys = [...statics, ...(loaded?.writable ?? []), ...(loaded?.readonly ?? [])].map((k) => new PublicKey(k));
+  const out: DecodedEvent[] = [];
+  for (const group of tx.meta?.innerInstructions ?? []) {
+    for (const ix of group.instructions) {
+      const pid = keys[ix.programIdIndex];
+      if (!pid || !pid.equals(POSSE_VAULT_PROGRAM_ID)) continue;
+      const ev = decodeEventIxData(bs58.decode(ix.data));
+      if (ev) out.push({ ...ev, outerIndex: group.index });
+    }
+  }
+  return out;
+}
