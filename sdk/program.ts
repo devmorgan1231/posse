@@ -210,3 +210,10 @@ export interface DecodedEvent {
   data: Record<string, unknown>;
   outerIndex: number;
 }
+
+export function decodeEventIxData(data: Uint8Array): { name: string; data: Record<string, unknown> } | null {
+  if (data.length < 16 || !bytesEqual(data.subarray(0, 8), EVENT_IX_TAG)) return null;
+  const ev = coder.events.decode(Buffer.from(data.subarray(8)).toString("base64"));
+  if (!ev) return null;
+  return { name: ev.name, data: normalize(ev.data) as Record<string, unknown> };
+}
