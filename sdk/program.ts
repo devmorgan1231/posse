@@ -198,3 +198,15 @@ export function accountKind(data: Uint8Array): AccountName | null {
   if (data.length < 8) return null;
   return ACCOUNT_DISC.get(hex(data.subarray(0, 8))) ?? null;
 }
+
+export function decodeAccount<K extends AccountName>(name: K, data: Uint8Array): AccountTypes[K] {
+  return normalize(coder.accounts.decode(name, Buffer.from(data))) as AccountTypes[K];
+}
+
+export const EVENT_IX_TAG = Uint8Array.from([0xe4, 0x45, 0xa5, 0x2e, 0x51, 0xcb, 0x9a, 0x1d]);
+
+export interface DecodedEvent {
+  name: string;
+  data: Record<string, unknown>;
+  outerIndex: number;
+}
