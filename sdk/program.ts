@@ -239,3 +239,19 @@ export function parseEvents(tx: TxLike): DecodedEvent[] {
   }
   return out;
 }
+
+const ERRORS = new Map<number, { name: string; msg: string }>(
+  (IDL.errors ?? []).map((e) => [e.code, { name: e.name, msg: e.msg ?? e.name }]),
+);
+export const POSSE_ERRORS = Object.fromEntries([...ERRORS.entries()].map(([code, e]) => [e.name, code])) as Record<string, number>;
+
+export function errorCode(logs: readonly string[] | null | undefined, err: unknown): number | null {
+  const all = [...(logs ?? []), typeof err === "string" ? err : JSON.stringify(err ?? "")].join("\n");
+  const m = /Error Number: (\d+)/.exec(all);
+  if (m) return Number(m[1]);
+  const h = /custom program error: 0x([0-9a-fA-F]+)/.exec(all);
+  if (h) return parseInt(h[1]!, 16);
+  const c = /"Custom":\s*(\d+)/.exec(all);
+  if (c) return Number(c[1]);
+  return null;
+}
