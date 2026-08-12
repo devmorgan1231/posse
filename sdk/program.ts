@@ -255,3 +255,14 @@ export function errorCode(logs: readonly string[] | null | undefined, err: unkno
   if (c) return Number(c[1]);
   return null;
 }
+export const errorName = (code: number | null) => (code === null ? null : (ERRORS.get(code)?.name ?? `code ${code}`));
+
+export const feeOf = (x: bigint, bps: number) => (x * BigInt(bps)) / BPS_DENOM;
+export const shareOf = (pool: bigint, amount: bigint, total: bigint) => (total === BigInt(0) ? BigInt(0) : (pool * amount) / total);
+export const headroomOf = (p: Pick<PosseAccount, "targetLamports" | "raisedLamports">) =>
+  p.targetLamports > p.raisedLamports ? p.targetLamports - p.raisedLamports : BigInt(0);
+export function minNextBid(d: Pick<DispositionAccount, "bidCount" | "reserveLamports" | "highBidLamports">): bigint {
+  if (d.bidCount === 0) return d.reserveLamports;
+  const inc = d.reserveLamports / BigInt(100) > MIN_BID_INCREMENT_LAMPORTS ? d.reserveLamports / BigInt(100) : MIN_BID_INCREMENT_LAMPORTS;
+  return d.highBidLamports + inc;
+}
