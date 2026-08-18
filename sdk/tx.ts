@@ -22,3 +22,11 @@ export const CU_LIMIT: Record<string, number> = {
   claim_refund: 40_000,
   close_posse: 50_000,
 };
+
+export interface BuildTxOptions {
+  feePayer: PublicKey;
+  recentBlockhash: string;
+  cuLimit?: number;
+  cuPriceMicroLamports?: number;
+  actions?: string[];
+}
