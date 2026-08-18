@@ -30,3 +30,12 @@ export interface BuildTxOptions {
   cuPriceMicroLamports?: number;
   actions?: string[];
 }
+
+export function buildPosseTx(ixs: TransactionInstruction[], o: BuildTxOptions): Transaction {
+  const limit = o.cuLimit ?? (o.actions?.length ? o.actions.reduce((s, a) => s + (CU_LIMIT[a] ?? 60_000), 0) : 200_000);
+  const tx = new Transaction({ feePayer: o.feePayer, recentBlockhash: o.recentBlockhash });
+  tx.add(ComputeBudgetProgram.setComputeUnitLimit({ units: Math.min(limit, 1_400_000) }));
+  if ((o.cuPriceMicroLamports ?? 0) > 0) tx.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: o.cuPriceMicroLamports! }));
+  tx.add(...ixs);
+  return tx;
+}
