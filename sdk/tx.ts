@@ -39,3 +39,13 @@ export function buildPosseTx(ixs: TransactionInstruction[], o: BuildTxOptions): 
   tx.add(...ixs);
   return tx;
 }
+
+export function wireSize(tx: Transaction): number {
+  return tx.serialize({ requireAllSignatures: false, verifySignatures: false }).length;
+}
+
+export function assertTxBudget(tx: Transaction): number {
+  const n = wireSize(tx);
+  if (n > TX_SIZE_BUDGET) throw new Error(`transaction is ${n} B, over the ${TX_SIZE_BUDGET} B budget`);
+  return n;
+}
