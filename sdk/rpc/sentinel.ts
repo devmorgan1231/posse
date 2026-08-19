@@ -28,3 +28,13 @@ export class StaleRpcSnapshot extends Error {
     this.name = "StaleRpcSnapshot";
   }
 }
+
+type JsonObject = Record<string, unknown>;
+type UiAccount = { data?: unknown } & JsonObject;
+type GmaResult = { context: { slot: number } & JsonObject; value: (UiAccount | null)[] };
+
+export interface SentinelPlan {
+  params: [string[], JsonObject];
+  clockSlot(result: GmaResult): number | null;
+  rebuild(result: GmaResult): { result: unknown } | { error: { code: number; message: string } };
+}
