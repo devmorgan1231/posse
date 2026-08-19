@@ -14,3 +14,17 @@ export function clockSlotOf(data: Uint8Array): number | null {
   if (data.length < 8) return null;
   return Number(new DataView(data.buffer, data.byteOffset, data.byteLength).getBigUint64(0, true));
 }
+
+export function isStaleSnapshot(contextSlot: number, clockSlot: number | null, maxLag = maxClockLagSlots()): boolean {
+  return clockSlot === null || contextSlot - clockSlot > maxLag;
+}
+
+export class StaleRpcSnapshot extends Error {
+  constructor(
+    public readonly attempts: number,
+    public readonly lagSlots: number | null,
+  ) {
+    super(`every RPC answer came from a lagging node (${attempts} reads, last lag ${lagSlots ?? "?"} slots)`);
+    this.name = "StaleRpcSnapshot";
+  }
+}
