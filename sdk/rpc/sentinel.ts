@@ -38,3 +38,12 @@ export interface SentinelPlan {
   clockSlot(result: GmaResult): number | null;
   rebuild(result: GmaResult): { result: unknown } | { error: { code: number; message: string } };
 }
+
+const isObject = (v: unknown): v is JsonObject => typeof v === "object" && v !== null && !Array.isArray(v);
+const isKey = (v: unknown): v is string => typeof v === "string" && v.length > 0;
+
+function pick(config: JsonObject, fields: string[]): JsonObject {
+  const out: JsonObject = {};
+  for (const f of fields) if (config[f] !== undefined) out[f] = config[f];
+  return out;
+}
