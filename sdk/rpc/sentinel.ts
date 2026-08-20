@@ -75,3 +75,67 @@ function clockReadable(config: JsonObject): boolean {
   const s = config.dataSlice;
   return isObject(s) && s.offset === 0 && typeof s.length === "number" && s.length >= 8;
 }
+
+function clockAt(index: number) {
+  return (r: GmaResult) => clockSlotFromUi(r.value[index]);
+}
+
+export function planSentinelRead(method: string, params: unknown): SentinelPlan | null {
+  if (!Array.isArray(params)) return null;
+  const [first, rawConfig] = params as [unknown, unknown];
+  if (params.length > 2 || (rawConfig !== undefined && !isObject(rawConfig))) return null;
+  const config: JsonObject = rawConfig ?? {};
+
+  switch (method) {
+    case "getBalance": {
+      if (!isKey(first)) return null;
+      const up = { ...pick(config, ["commitment", "minContextSlot"]), encoding: "base64", dataSlice: { offset: 0, length: 8 } };
+      return {
+        params: [[first, CLOCK_SYSVAR_ADDRESS], up],
+        clockSlot: clockAt(1),
+        rebuild: (r) => {
+          const acc = r.value[0];
+          return { result: { context: r.context, value: acc && typeof acc.lamports === "number" ? acc.lamports : 0 } };
+        },
+      };
+    }
+    case "getAccountInfo": {
+      if (!isKey(first) || !clockReadable(config)) return null;
+      const up = { ...config, encoding: config.encoding ?? "binary" };
+      return {
+        params: [[first, CLOCK_SYSVAR_ADDRESS], up],
+        clockSlot: clockAt(1),
+        rebuild: (r) => ({ result: { context: r.context, value: r.value[0] ?? null } }),
+      };
+    }
+    case "getMultipleAccounts": {
+      if (!Array.isArray(first) || !first.every(isKey) || first.length === 0 || first.length >= MAX_KEYS) return null;
+      if (!clockReadable(config)) return null;
+      const n = first.length;
+      return {
+        params: [[...(first as string[]), CLOCK_SYSVAR_ADDRESS], config],
+        clockSlot: clockAt(n),
+        rebuild: (r) => ({ result: { context: r.context, value: r.value.slice(0, n) } }),
+      };
+    }
+    case "getTokenAccountBalance": {
+      if (!isKey(first)) return null;
+      const up = { ...pick(config, ["commitment", "minContextSlot"]), encoding: "jsonParsed" };
+      return {
+        params: [[first, CLOCK_SYSVAR_ADDRESS], up],
+        clockSlot: clockAt(1),
+        rebuild: (r) => {
+          const acc = r.value[0];
+          if (!acc) return { error: { code: -32602, message: "Invalid param: could not find account" } };
+          const d = acc.data;
+          const amount =
+            isObject(d) && isObject(d.parsed) && d.parsed.type === "account" && isObject(d.parsed.info) ? d.parsed.info.tokenAmount : undefined;
+          if (!isObject(amount)) return { error: { code: -32602, message: "Invalid param: not a Token account" } };
+          return { result: { context: r.context, value: amount } };
+        },
+      };
+    }
+    default:
+      return null;
+  }
+}
