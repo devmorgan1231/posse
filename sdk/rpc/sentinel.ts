@@ -66,3 +66,12 @@ function clockSlotFromUi(acc: UiAccount | null | undefined): number | null {
   }
   return null;
 }
+
+const DECODABLE = new Set(["base64", "base58", "binary", "jsonParsed"]);
+
+function clockReadable(config: JsonObject): boolean {
+  if (config.encoding !== undefined && !(typeof config.encoding === "string" && DECODABLE.has(config.encoding))) return false;
+  if (config.dataSlice === undefined || config.dataSlice === null) return true;
+  const s = config.dataSlice;
+  return isObject(s) && s.offset === 0 && typeof s.length === "number" && s.length >= 8;
+}
