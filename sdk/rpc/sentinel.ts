@@ -47,3 +47,22 @@ function pick(config: JsonObject, fields: string[]): JsonObject {
   for (const f of fields) if (config[f] !== undefined) out[f] = config[f];
   return out;
 }
+
+function clockSlotFromUi(acc: UiAccount | null | undefined): number | null {
+  if (!acc) return null;
+  const d = acc.data;
+  try {
+    if (typeof d === "string") return clockSlotOf(bs58.decode(d));
+    if (Array.isArray(d) && typeof d[0] === "string") {
+      if (d[1] === "base64") return clockSlotOf(Buffer.from(d[0], "base64"));
+      if (d[1] === "base58") return clockSlotOf(bs58.decode(d[0]));
+      return null;
+    }
+    if (isObject(d) && isObject(d.parsed) && isObject(d.parsed.info) && typeof d.parsed.info.slot === "number") {
+      return d.parsed.info.slot;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
