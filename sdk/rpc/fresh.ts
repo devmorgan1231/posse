@@ -15,3 +15,17 @@ export class StaleReadError extends Error {
     this.name = "StaleReadError";
   }
 }
+
+export class SlotFloor {
+  private value = 0;
+  get slot(): number {
+    return this.value;
+  }
+  raise(slot: number): void {
+    if (slot > this.value) this.value = slot;
+  }
+  observe(slot: number, what: string): void {
+    if (slot < this.value) throw new StaleReadError(what, slot, this.value);
+    this.value = slot;
+  }
+}
