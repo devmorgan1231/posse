@@ -29,3 +29,12 @@ export class SlotFloor {
     this.value = slot;
   }
 }
+
+export interface FreshOptions {
+  commitment?: Commitment;
+  attempts?: number;
+  backoffMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+  clock?: boolean;
+  maxLagSlots?: number;
+}
