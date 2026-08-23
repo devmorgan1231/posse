@@ -45,3 +45,18 @@ function isRetryable(e: unknown): boolean {
   if (e instanceof StaleReadError || e instanceof StaleRpcSnapshot) return true;
   return (e as { code?: number } | null)?.code === MIN_CONTEXT_SLOT_NOT_REACHED;
 }
+
+async function withRetry<T>(fn: () => Promise<T>, opts: FreshOptions): Promise<T> {
+  const attempts = Math.max(1, opts.attempts ?? 6);
+  const backoff = opts.backoffMs ?? 400;
+  const sleep = opts.sleep ?? defaultSleep;
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!isRetryable(e)) throw e;
+      if (i >= attempts - 1) throw e;
+      await sleep(backoff * 2 ** i);
+    }
+  }
+}
