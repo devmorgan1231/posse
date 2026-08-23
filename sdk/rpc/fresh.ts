@@ -38,3 +38,10 @@ export interface FreshOptions {
   clock?: boolean;
   maxLagSlots?: number;
 }
+
+export const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+function isRetryable(e: unknown): boolean {
+  if (e instanceof StaleReadError || e instanceof StaleRpcSnapshot) return true;
+  return (e as { code?: number } | null)?.code === MIN_CONTEXT_SLOT_NOT_REACHED;
+}
