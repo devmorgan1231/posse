@@ -60,3 +60,30 @@ async function withRetry<T>(fn: () => Promise<T>, opts: FreshOptions): Promise<T
     }
   }
 }
+
+const CLOCK_KEY = new PublicKey(CLOCK_SYSVAR_ADDRESS);
+const MAX_KEYS = 100;
+
+export async function readAccountsFresh(
+  conn: FreshConnection,
+  floor: SlotFloor,
+  keys: PublicKey[],
+  opts: FreshOptions = {},
+): Promise<{ value: (AccountInfo<Buffer> | null)[]; slot: number }> {
+  const commitment = opts.commitment ?? "confirmed";
+  const clock = opts.clock !== false;
+  if (keys.length > (clock ? MAX_KEYS - 1 : MAX_KEYS)) throw new Error(`readAccountsFresh: at most ${clock ? MAX_KEYS - 1 : MAX_KEYS} keys`);
+  return withRetry(async () => {
+    const all = clock ? [...keys, CLOCK_KEY] : keys;
+    const r = await conn.getMultipleAccountsInfoAndContext(all, { commitment, minContextSlot: floor.slot });
+    if (clock) {
+      const c = r.value[keys.length];
+      const clockSlot = c ? clockSlotOf(c.data) : null;
+      if (isStaleSnapshot(r.context.slot, clockSlot, opts.maxLagSlots ?? maxClockLagSlots())) {
+        throw new StaleRpcSnapshot(1, clockSlot === null ? null : r.context.slot - clockSlot);
+      }
+    }
+    floor.observe(r.context.slot, "getMultipleAccounts");
+    return { value: r.value.slice(0, keys.length), slot: r.context.slot };
+  }, opts);
+}
