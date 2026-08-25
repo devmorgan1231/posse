@@ -87,3 +87,13 @@ export async function readAccountsFresh(
     return { value: r.value.slice(0, keys.length), slot: r.context.slot };
   }, opts);
 }
+
+export async function readAccountFresh(
+  conn: FreshConnection,
+  floor: SlotFloor,
+  key: PublicKey,
+  opts: FreshOptions = {},
+): Promise<{ value: AccountInfo<Buffer> | null; slot: number }> {
+  const r = await readAccountsFresh(conn, floor, [key], opts);
+  return { value: r.value[0] ?? null, slot: r.slot };
+}
