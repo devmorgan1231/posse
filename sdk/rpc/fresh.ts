@@ -97,3 +97,16 @@ export async function readAccountFresh(
   const r = await readAccountsFresh(conn, floor, [key], opts);
   return { value: r.value[0] ?? null, slot: r.slot };
 }
+
+export async function readStatusesFresh(
+  conn: FreshConnection,
+  floor: SlotFloor,
+  signatures: string[],
+  opts: FreshOptions = {},
+): Promise<{ value: (SignatureStatus | null)[]; slot: number }> {
+  return withRetry(async () => {
+    const r = await conn.getSignatureStatuses(signatures, { searchTransactionHistory: true });
+    floor.observe(r.context.slot, "getSignatureStatuses");
+    return { value: r.value, slot: r.context.slot };
+  }, opts);
+}
