@@ -110,3 +110,12 @@ export async function readStatusesFresh(
     return { value: r.value, slot: r.context.slot };
   }, opts);
 }
+
+export async function readBlockHeightFresh(conn: FreshConnection, floor: SlotFloor, opts: FreshOptions = {}): Promise<number> {
+  const commitment = opts.commitment ?? "confirmed";
+  return withRetry(async () => {
+    const info = await conn.getEpochInfo({ commitment, minContextSlot: floor.slot });
+    floor.observe(info.absoluteSlot, "getEpochInfo");
+    return info.blockHeight ?? 0;
+  }, opts);
+}
