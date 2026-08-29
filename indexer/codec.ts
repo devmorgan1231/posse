@@ -58,3 +58,39 @@ export function decodeLayout(layout: Layout, data: Buffer, offset = 0): Decoded 
   }
   return out;
 }
+
+export function encodeLayout(layout: Layout, v: Decoded): Buffer {
+  const buf = Buffer.alloc(layoutSize(layout));
+  let o = 0;
+  for (const [name, t] of layout) {
+    const x = v[name];
+    switch (t) {
+      case "pubkey": {
+        const b = bs58.decode(String(x));
+        if (b.length !== 32) throw new Error(`pubkey ${name}`);
+        buf.set(b, o);
+        break;
+      }
+      case "u8":
+        buf.writeUInt8(Number(x), o);
+        break;
+      case "bool":
+        buf.writeUInt8(x ? 1 : 0, o);
+        break;
+      case "u16":
+        buf.writeUInt16LE(Number(x), o);
+        break;
+      case "u32":
+        buf.writeUInt32LE(Number(x), o);
+        break;
+      case "u64":
+        buf.writeBigUInt64LE(BigInt(x as bigint), o);
+        break;
+      case "i64":
+        buf.writeBigInt64LE(BigInt(x as bigint), o);
+        break;
+    }
+    o += SIZE[t];
+  }
+  return buf;
+}
