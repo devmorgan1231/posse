@@ -12,3 +12,12 @@ export const layoutSize = (l: Layout) => l.reduce((s, [, t]) => s + SIZE[t], 0);
 export function discriminator(namespace: "account" | "event" | "global", name: string): Buffer {
   return createHash("sha256").update(`${namespace}:${name}`).digest().subarray(0, 8);
 }
+
+export const EVENT_IX_TAG = Buffer.from(createHash("sha256").update("anchor:event").digest().subarray(0, 8)).reverse();
+
+export class DecodeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DecodeError";
+  }
+}
