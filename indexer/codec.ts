@@ -21,3 +21,40 @@ export class DecodeError extends Error {
     this.name = "DecodeError";
   }
 }
+
+export function decodeLayout(layout: Layout, data: Buffer, offset = 0): Decoded {
+  const need = offset + layoutSize(layout);
+  if (data.length < need) throw new DecodeError(`short data: ${data.length} < ${need}`);
+  const out: Decoded = {};
+  let o = offset;
+  for (const [name, t] of layout) {
+    switch (t) {
+      case "pubkey":
+        out[name] = bs58.encode(data.subarray(o, o + 32));
+        break;
+      case "u8":
+        out[name] = data.readUInt8(o);
+        break;
+      case "bool": {
+        const b = data.readUInt8(o);
+        if (b > 1) throw new DecodeError(`bool ${name} = ${b}`);
+        out[name] = b === 1;
+        break;
+      }
+      case "u16":
+        out[name] = data.readUInt16LE(o);
+        break;
+      case "u32":
+        out[name] = data.readUInt32LE(o);
+        break;
+      case "u64":
+        out[name] = data.readBigUInt64LE(o);
+        break;
+      case "i64":
+        out[name] = data.readBigInt64LE(o);
+        break;
+    }
+    o += SIZE[t];
+  }
+  return out;
+}
