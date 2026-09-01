@@ -176,3 +176,127 @@ export const ACCOUNT_LAYOUTS = {
     ["rentPayer", "pubkey"],
   ],
 } as const satisfies Record<string, Layout>;
+
+export type AccountName = keyof typeof ACCOUNT_LAYOUTS;
+export const ACCOUNT_NAMES = Object.keys(ACCOUNT_LAYOUTS) as AccountName[];
+
+export const EVENT_LAYOUTS = {
+  ConfigUpdated: [
+    ["admin", "pubkey"],
+    ["feeWallet", "pubkey"],
+    ["executionFeeBps", "u16"],
+    ["settlementFeeBps", "u16"],
+    ["paused", "bool"],
+  ],
+  PosseCreated: [
+    ["posse", "pubkey"],
+    ["organizer", "pubkey"],
+    ["mint", "pubkey"],
+    ["seller", "pubkey"],
+    ["target", "u64"],
+    ["maxPrice", "u64"],
+    ["feeBps", "u16"],
+    ["closesAt", "i64"],
+    ["exitKind", "u8"],
+    ["exitDay", "u16"],
+    ["exitPrice", "u64"],
+    ["exitHours", "u16"],
+    ["royaltyBps", "u16"],
+    ["royaltyRecipient", "pubkey"],
+    ["nonce", "u64"],
+  ],
+  ChippedIn: [
+    ["posse", "pubkey"],
+    ["contributor", "pubkey"],
+    ["accepted", "u64"],
+    ["newRaised", "u64"],
+    ["contributorCount", "u32"],
+  ],
+  Funded: [
+    ["posse", "pubkey"],
+    ["raised", "u64"],
+  ],
+  Withdrew: [
+    ["posse", "pubkey"],
+    ["contributor", "pubkey"],
+    ["amount", "u64"],
+    ["newRaised", "u64"],
+  ],
+  AssetListed: [
+    ["listing", "pubkey"],
+    ["seller", "pubkey"],
+    ["mint", "pubkey"],
+    ["ask", "u64"],
+  ],
+  ListingCancelled: [
+    ["listing", "pubkey"],
+    ["seller", "pubkey"],
+    ["mint", "pubkey"],
+  ],
+  Purchased: [
+    ["posse", "pubkey"],
+    ["mint", "pubkey"],
+    ["seller", "pubkey"],
+    ["price", "u64"],
+    ["fee", "u64"],
+    ["returned", "u64"],
+    ["at", "i64"],
+  ],
+  SharesIssued: [
+    ["posse", "pubkey"],
+    ["at", "i64"],
+  ],
+  Expired: [
+    ["posse", "pubkey"],
+    ["at", "i64"],
+  ],
+  DispositionStarted: [
+    ["posse", "pubkey"],
+    ["kind", "u8"],
+    ["startsAt", "i64"],
+    ["endsAt", "i64"],
+    ["reserve", "u64"],
+  ],
+  BidPlaced: [
+    ["posse", "pubkey"],
+    ["bidder", "pubkey"],
+    ["amount", "u64"],
+    ["prevBidder", "pubkey"],
+    ["prevRefund", "u64"],
+    ["at", "i64"],
+  ],
+  Settled: [
+    ["posse", "pubkey"],
+    ["buyer", "pubkey"],
+    ["sale", "u64"],
+    ["royalty", "u64"],
+    ["fee", "u64"],
+    ["net", "u64"],
+    ["at", "i64"],
+  ],
+  DispositionFailed: [
+    ["posse", "pubkey"],
+    ["at", "i64"],
+  ],
+  ReturnedClaimed: [
+    ["posse", "pubkey"],
+    ["contributor", "pubkey"],
+    ["amount", "u64"],
+  ],
+  ProceedsClaimed: [
+    ["posse", "pubkey"],
+    ["contributor", "pubkey"],
+    ["amount", "u64"],
+  ],
+  RefundClaimed: [
+    ["posse", "pubkey"],
+    ["contributor", "pubkey"],
+    ["amount", "u64"],
+  ],
+  PosseClosed: [
+    ["posse", "pubkey"],
+    ["dustToFeeWallet", "u64"],
+    ["rentToOrganizer", "u64"],
+    ["at", "i64"],
+  ],
+} as const satisfies Record<string, Layout>;
