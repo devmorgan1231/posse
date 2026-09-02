@@ -300,3 +300,22 @@ export const EVENT_LAYOUTS = {
     ["at", "i64"],
   ],
 } as const satisfies Record<string, Layout>;
+
+export type EventName = keyof typeof EVENT_LAYOUTS;
+export const EVENT_NAMES = Object.keys(EVENT_LAYOUTS) as EventName[];
+
+export const POSSE_STATUS = ["open", "raising", "funded", "bought", "held", "disposing", "settled", "refunded"] as const;
+export type OnchainStatus = (typeof POSSE_STATUS)[number];
+export const EXIT_KIND = ["auction", "listing"] as const;
+export const LISTING_STATUS = ["open", "sold", "cancelled"] as const;
+
+export function enumName<T extends readonly string[]>(values: T, raw: unknown, what: string): T[number] {
+  if (typeof raw === "string") {
+    const k = raw.toLowerCase();
+    if (k === "refunding") return "refunded" as T[number];
+    if ((values as readonly string[]).includes(k)) return k as T[number];
+  }
+  const n = Number(raw);
+  if (Number.isInteger(n) && n >= 0 && n < values.length) return values[n] as T[number];
+  throw new DecodeError(`${what}: unknown value ${String(raw)}`);
+}
