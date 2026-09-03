@@ -28,3 +28,27 @@ export interface VaultDecoder {
   decodeAccount(data: Buffer): DecodedAccount | null;
   decodeEvent(data: Buffer): DecodedEvent | null;
 }
+
+const hex = (b: Buffer) => b.toString("hex");
+
+export function specDecoder(): VaultDecoder {
+  const accounts = new Map(ACCOUNT_NAMES.map((n) => [hex(discriminator("account", n)), n] as const));
+  const events = new Map(EVENT_NAMES.map((n) => [hex(discriminator("event", n)), n] as const));
+  return {
+    source: "spec",
+    idlAddress: null,
+    accountDiscriminator: (name) => discriminator("account", name),
+    decodeAccount(data) {
+      if (data.length < 8) return null;
+      const name = accounts.get(hex(data.subarray(0, 8)));
+      if (!name) return null;
+      return { name, data: decodeLayout(ACCOUNT_LAYOUTS[name], data, 8) };
+    },
+    decodeEvent(data) {
+      if (data.length < 8) return null;
+      const name = events.get(hex(data.subarray(0, 8)));
+      if (!name) return null;
+      return { name, data: decodeLayout(EVENT_LAYOUTS[name], data, 8) };
+    },
+  };
+}
