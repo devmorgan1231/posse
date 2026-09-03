@@ -52,3 +52,20 @@ export function specDecoder(): VaultDecoder {
     },
   };
 }
+
+const camel = (s: string) => s.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+
+function norm(v: unknown): string | number | boolean | bigint {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "number" || typeof v === "boolean" || typeof v === "bigint" || typeof v === "string") return v;
+  const o = v as { toBase58?: () => string; toString?: (r?: number) => string; constructor?: { name?: string } };
+  if (typeof o.toBase58 === "function") return o.toBase58();
+  if (o.constructor?.name === "BN" || (typeof (v as { toArray?: unknown }).toArray === "function" && typeof o.toString === "function")) {
+    return BigInt(o.toString!(10));
+  }
+  if (typeof v === "object") {
+    const keys = Object.keys(v as object);
+    if (keys.length === 1) return keys[0]!.toLowerCase();
+  }
+  throw new DecodeError(`unsupported IDL value ${String(v)}`);
+}
