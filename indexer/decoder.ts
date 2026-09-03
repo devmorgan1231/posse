@@ -69,3 +69,12 @@ function norm(v: unknown): string | number | boolean | bigint {
   }
   throw new DecodeError(`unsupported IDL value ${String(v)}`);
 }
+
+function normalize(obj: Record<string, unknown>): Decoded {
+  const out: Decoded = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (Array.isArray(v) || v instanceof Uint8Array) continue;
+    out[camel(k)] = norm(v);
+  }
+  return out;
+}
