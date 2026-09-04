@@ -84,3 +84,43 @@ interface IdlLike {
   accounts?: { name: string; discriminator?: number[] }[];
   events?: { name: string; discriminator?: number[] }[];
 }
+
+export async function idlDecoder(idl: IdlLike): Promise<VaultDecoder> {
+  const { BorshCoder } = await import("@coral-xyz/anchor");
+  const coder = new BorshCoder(idl as any);
+  const pascal = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const accountByDisc = new Map<string, { idlName: string; name: string }>();
+  for (const a of idl.accounts ?? []) {
+    const d = a.discriminator ? Buffer.from(a.discriminator) : discriminator("account", pascal(a.name));
+    accountByDisc.set(hex(d), { idlName: a.name, name: pascal(a.name) });
+  }
+  const known = new Set<string>(ACCOUNT_NAMES);
+  return {
+    source: "idl",
+    idlAddress: idl.address ?? null,
+    accountDiscriminator(name) {
+      for (const [d, a] of accountByDisc) if (a.name === name) return Buffer.from(d, "hex");
+      return discriminator("account", name);
+    },
+    decodeAccount(data) {
+      if (data.length < 8) return null;
+      const a = accountByDisc.get(hex(data.subarray(0, 8)));
+      if (!a || !known.has(a.name)) return null;
+      try {
+        return { name: a.name as AccountName, data: normalize(coder.accounts.decode(a.idlName, data)) };
+      } catch (e) {
+        throw new DecodeError(`IDL account ${a.name}: ${(e as Error).message}`);
+      }
+    },
+    decodeEvent(data) {
+      let ev: { name: string; data: Record<string, unknown> } | null;
+      try {
+        ev = coder.events.decode(data.toString("base64")) as typeof ev;
+      } catch (e) {
+        throw new DecodeError(`IDL event: ${(e as Error).message}`);
+      }
+      if (!ev) return null;
+      return { name: pascal(ev.name), data: normalize(ev.data) };
+    },
+  };
+}
