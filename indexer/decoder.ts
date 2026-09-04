@@ -78,3 +78,9 @@ function normalize(obj: Record<string, unknown>): Decoded {
   }
   return out;
 }
+
+interface IdlLike {
+  address?: string;
+  accounts?: { name: string; discriminator?: number[] }[];
+  events?: { name: string; discriminator?: number[] }[];
+}
