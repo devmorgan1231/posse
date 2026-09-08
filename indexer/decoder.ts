@@ -124,3 +124,8 @@ export async function idlDecoder(idl: IdlLike): Promise<VaultDecoder> {
     },
   };
 }
+
+export function idlCandidates(env: Record<string, string | undefined> = process.env, cwd = process.cwd()): string[] {
+  const list = [env.POSSE_IDL_PATH, "sdk/idl/posse_vault.json"].filter(Boolean) as string[];
+  return list.map((p) => path.resolve(cwd, p));
+}
