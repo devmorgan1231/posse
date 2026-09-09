@@ -129,3 +129,12 @@ export function idlCandidates(env: Record<string, string | undefined> = process.
   const list = [env.POSSE_IDL_PATH, "sdk/idl/posse_vault.json"].filter(Boolean) as string[];
   return list.map((p) => path.resolve(cwd, p));
 }
+
+export async function loadDecoder(env: Record<string, string | undefined> = process.env, cwd = process.cwd()): Promise<VaultDecoder> {
+  for (const p of idlCandidates(env, cwd)) {
+    if (!fs.existsSync(p)) continue;
+    const idl = JSON.parse(fs.readFileSync(p, "utf8")) as IdlLike;
+    return idlDecoder(idl);
+  }
+  return specDecoder();
+}
