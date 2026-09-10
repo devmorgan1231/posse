@@ -10,3 +10,8 @@ export interface SigInfo {
   err: unknown;
   blockTime: number | null;
 }
+
+export interface RawEvent {
+  ixIndex: number;
+  data: Buffer;
+}
