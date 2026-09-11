@@ -32,3 +32,10 @@ export interface IndexerChain {
   transactionEvents(programId: PublicKey, signature: string): Promise<TxEvents | null>;
   staleStats(): StaleStats;
 }
+
+export interface StaleStats {
+  reads: number;
+  stale: number;
+  notReached: number;
+  maxLagSlots: number;
+}
