@@ -23,3 +23,12 @@ export interface TxEvents {
   failed: boolean;
   events: RawEvent[];
 }
+
+export interface IndexerChain {
+  floor: SlotFloor;
+  programAccounts(programId: PublicKey): Promise<{ accounts: { key: string; head: Buffer }[]; slot: number }>;
+  readAccounts(keys: string[]): Promise<{ value: (AccountInfo<Buffer> | null)[]; slot: number }>;
+  signaturesSince(programId: PublicKey, until: string | null, max: number): Promise<SigInfo[]>;
+  transactionEvents(programId: PublicKey, signature: string): Promise<TxEvents | null>;
+  staleStats(): StaleStats;
+}
