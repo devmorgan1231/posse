@@ -15,3 +15,11 @@ export interface RawEvent {
   ixIndex: number;
   data: Buffer;
 }
+
+export interface TxEvents {
+  signature: string;
+  slot: number;
+  blockTime: number | null;
+  failed: boolean;
+  events: RawEvent[];
+}
