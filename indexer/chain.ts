@@ -39,3 +39,29 @@ export interface StaleStats {
   notReached: number;
   maxLagSlots: number;
 }
+
+export function countingConnection(conn: FreshConnection, stats: StaleStats): FreshConnection {
+  const maxLag = maxClockLagSlots();
+  return {
+    getSignatureStatuses: (...a: Parameters<FreshConnection["getSignatureStatuses"]>) => conn.getSignatureStatuses(...a),
+    getEpochInfo: (...a: Parameters<FreshConnection["getEpochInfo"]>) => conn.getEpochInfo(...a),
+    async getMultipleAccountsInfoAndContext(keys, cfg) {
+      stats.reads++;
+      try {
+        const r = await conn.getMultipleAccountsInfoAndContext(keys, cfg);
+        const last = keys[keys.length - 1];
+        if (last && last.toBase58() === CLOCK_SYSVAR_ADDRESS) {
+          const c = r.value[keys.length - 1];
+          const clockSlot = c ? clockSlotOf(c.data) : null;
+          const lag = clockSlot === null ? Infinity : r.context.slot - clockSlot;
+          if (Number.isFinite(lag) && lag > stats.maxLagSlots) stats.maxLagSlots = lag;
+          if (lag > maxLag) stats.stale++;
+        }
+        return r;
+      } catch (e) {
+        if ((e as { code?: number } | null)?.code === MIN_CONTEXT_SLOT_NOT_REACHED) stats.notReached++;
+        throw e;
+      }
+    },
+  } as FreshConnection;
+}
