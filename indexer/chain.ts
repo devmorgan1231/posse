@@ -65,3 +65,16 @@ export function countingConnection(conn: FreshConnection, stats: StaleStats): Fr
     },
   } as FreshConnection;
 }
+
+export async function retryStale<T>(fn: () => Promise<T>, stats?: StaleStats, attempts = 5, baseMs = 300, sleep = defaultSleep): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const behind = e instanceof StaleReadError || (e as { code?: number } | null)?.code === MIN_CONTEXT_SLOT_NOT_REACHED;
+      if (!behind || i >= attempts - 1) throw e;
+      if (stats) stats.notReached++;
+      await sleep(baseMs * 2 ** i);
+    }
+  }
+}
