@@ -78,3 +78,32 @@ export async function retryStale<T>(fn: () => Promise<T>, stats?: StaleStats, at
     }
   }
 }
+
+const CHUNK = 99;
+
+export function extractEvents(programId: PublicKey, tx: VersionedTransactionResponse): RawEvent[] {
+  const out: RawEvent[] = [];
+  const meta = tx.meta;
+  if (!meta) return out;
+  const keys = tx.transaction.message.getAccountKeys({ accountKeysFromLookups: meta.loadedAddresses ?? undefined });
+  const pid = programId.toBase58();
+  for (const group of meta.innerInstructions ?? []) {
+    group.instructions.forEach((ix, j) => {
+      const prog = keys.get(ix.programIdIndex);
+      if (!prog || prog.toBase58() !== pid) return;
+      const data = Buffer.from(bs58.decode(ix.data));
+      if (data.length >= 16 && data.subarray(0, 8).equals(EVENT_IX_TAG)) out.push({ ixIndex: group.index * 1000 + j, data: data.subarray(8) });
+    });
+  }
+  if (out.length) return out;
+  const stack: string[] = [];
+  (meta.logMessages ?? []).forEach((line, i) => {
+    const inv = /^Program (\S+) invoke \[\d+\]$/.exec(line);
+    if (inv) return void stack.push(inv[1]!);
+    if (/^Program (\S+) (success|failed)/.test(line)) return void stack.pop();
+    if (line.startsWith("Program data: ") && stack[stack.length - 1] === pid) {
+      out.push({ ixIndex: 100_000 + i, data: Buffer.from(line.slice(14), "base64") });
+    }
+  });
+  return out;
+}
