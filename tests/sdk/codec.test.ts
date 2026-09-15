@@ -14,6 +14,16 @@ describe("codec", () => {
     expect(discriminator("account", "Posse").equals(want)).toBe(true);
     expect(EVENT_IX_TAG.toString("hex")).toBe("e445a52e51cb9a1d");
   });
+
+  it("round-trips a Posse account with a reserved tail and reads only the known prefix", () => {
+    const org = key();
+    const d = posseData({ organizer: org, mint: key(), seller: key(), raisedLamports: SOL(7.25), status: 1, contributorCount: 3 });
+    const dec = specDecoder().decodeAccount(encodeAccount("Posse", d, 128));
+    expect(dec?.name).toBe("Posse");
+    expect(dec?.data.raisedLamports).toBe(SOL(7.25));
+    expect(dec?.data.organizer).toBe(org);
+    expect(dec?.data.contributorCount).toBe(3);
+  });
 });
 
 describe("event extraction from a transaction", () => {
