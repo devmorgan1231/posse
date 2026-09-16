@@ -24,6 +24,14 @@ describe("codec", () => {
     expect(dec?.data.organizer).toBe(org);
     expect(dec?.data.contributorCount).toBe(3);
   });
+
+  it("unknown discriminator -> null; short data under a known discriminator -> DecodeError", () => {
+    const dec = specDecoder();
+    expect(dec.decodeAccount(Buffer.alloc(64, 7))).toBeNull();
+    const short = Buffer.concat([discriminator("account", "Posse"), Buffer.alloc(10)]);
+    expect(() => dec.decodeAccount(short)).toThrow(DecodeError);
+    expect(dec.decodeEvent(encodeEvent("Funded", { posse: key(), raised: SOL(10) }))?.name).toBe("Funded");
+  });
 });
 
 describe("event extraction from a transaction", () => {
