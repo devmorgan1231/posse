@@ -49,4 +49,30 @@ describe("codec", () => {
 });
 
 describe("event extraction from a transaction", () => {
+  it("reads emit_cpi self-CPIs of our program only, falls back to Program data logs", () => {
+    const pid = new PublicKey(key());
+    const other = new PublicKey(key());
+    const ev = encodeEvent("SharesIssued", { posse: key(), at: BigInt(5) });
+    const keys = [new PublicKey(key()), pid, other];
+    const ixData = bs58.encode(Buffer.concat([EVENT_IX_TAG, ev]));
+    const tx = {
+      transaction: { message: { getAccountKeys: () => ({ get: (i: number) => keys[i] }) } },
+      meta: {
+        err: null,
+        loadedAddresses: { writable: [], readonly: [] },
+        innerInstructions: [{ index: 0, instructions: [{ programIdIndex: 1, accounts: [], data: ixData }, { programIdIndex: 2, accounts: [], data: ixData }] }],
+        logMessages: [],
+      },
+    };
+    const got = extractEvents(pid, tx as any);
+    expect(got).toHaveLength(1);
+    expect(got[0]!.data.equals(ev)).toBe(true);
+
+    const logsTx = {
+      ...tx,
+      meta: { ...tx.meta, innerInstructions: [], logMessages: [`Program ${pid.toBase58()} invoke [1]`, `Program data: ${ev.toString("base64")}`, `Program ${pid.toBase58()} success`, `Program data: ${ev.toString("base64")}`] },
+    };
+    const fromLogs = extractEvents(pid, logsTx as any);
+    expect(fromLogs).toHaveLength(1);
+  });
 });
