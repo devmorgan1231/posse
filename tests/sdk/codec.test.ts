@@ -39,6 +39,13 @@ describe("codec", () => {
     buf[32 + 32 + 8 + 8] = 9;
     expect(() => decodeLayout(l, buf)).toThrow(DecodeError);
   });
+
+  it("status enum maps the program's u8 and Anchor enum names; Refunding reads as refunded", () => {
+    expect(enumName(POSSE_STATUS, 7, "s")).toBe("refunded");
+    expect(enumName(POSSE_STATUS, "Refunding", "s")).toBe("refunded");
+    expect(enumName(POSSE_STATUS, "held", "s")).toBe("held");
+    expect(() => enumName(POSSE_STATUS, 8, "s")).toThrow(DecodeError);
+  });
 });
 
 describe("event extraction from a transaction", () => {
