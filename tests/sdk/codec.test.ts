@@ -32,6 +32,13 @@ describe("codec", () => {
     expect(() => dec.decodeAccount(short)).toThrow(DecodeError);
     expect(dec.decodeEvent(encodeEvent("Funded", { posse: key(), raised: SOL(10) }))?.name).toBe("Funded");
   });
+
+  it("bool bytes other than 0/1 are rejected (layout drift shows up as a failure, not a value)", () => {
+    const l = ACCOUNT_LAYOUTS.Contribution;
+    const buf = encodeLayout(l, { posse: key(), contributor: key(), amountLamports: BigInt(1), firstAt: BigInt(1), returnedClaimed: false, finalClaimed: false, bump: 1 });
+    buf[32 + 32 + 8 + 8] = 9;
+    expect(() => decodeLayout(l, buf)).toThrow(DecodeError);
+  });
 });
 
 describe("event extraction from a transaction", () => {
