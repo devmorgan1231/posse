@@ -81,4 +81,12 @@ describe("indexer chain reader against a lagging node", () => {
     expect(r.value[0]!.data.toString()).toBe("c");
     expect(r.slot).toBe(3002);
   });
+
+  it("control: a healthy node is read once", async () => {
+    const { conn, calls } = scriptedConnection([{ kind: "fresh", slot: 10, value: "x" }]);
+    const chain = rpcChain(conn as any, { sleep: noSleep });
+    await chain.readAccounts([key()]);
+    expect(calls).toHaveLength(1);
+    expect(chain.staleStats().stale).toBe(0);
+  });
 });
