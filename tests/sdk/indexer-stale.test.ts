@@ -54,4 +54,18 @@ describe("indexer chain reader against a lagging node", () => {
     expect(s.stale).toBe(1);
     expect(s.maxLagSlots).toBe(30_000);
   });
+
+  it("waits on -32016 (node below minContextSlot) instead of taking an older answer", async () => {
+    const { conn, calls } = scriptedConnection([
+      { kind: "fresh", slot: 2000, value: "a" },
+      { kind: "behind", slot: 0, value: "" },
+      { kind: "fresh", slot: 2001, value: "b" },
+    ]);
+    const chain = rpcChain(conn as any, { sleep: noSleep });
+    await chain.readAccounts([key()]);
+    const r = await chain.readAccounts([key()]);
+    expect(r.value[0]!.data.toString()).toBe("b");
+    expect(calls[1]!.minContextSlot).toBe(2000);
+    expect(chain.staleStats().notReached).toBe(1);
+  });
 });
