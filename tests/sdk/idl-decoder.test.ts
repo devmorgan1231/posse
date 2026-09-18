@@ -60,4 +60,11 @@ describe("IDL decoder == spec codec", { skip: !haveIdl }, () => {
       expect(a?.data).toEqual(b?.data);
     });
   }
+
+  it("every IDL account and event has a spec layout (no event type the indexer cannot read)", () => {
+    const accounts = (idl.accounts as { name: string }[]).map((a) => a.name).sort();
+    const events = (idl.events as { name: string }[]).map((e) => e.name).sort();
+    expect(accounts).toEqual(Object.keys(ACCOUNT_LAYOUTS).sort());
+    expect(events).toEqual(Object.keys(EVENT_LAYOUTS).sort());
+  });
 });
