@@ -68,4 +68,17 @@ describe("indexer chain reader against a lagging node", () => {
     expect(calls[1]!.minContextSlot).toBe(2000);
     expect(chain.staleStats().notReached).toBe(1);
   });
+
+  it("rejects a context slot that went backwards and re-reads", async () => {
+    const { conn } = scriptedConnection([
+      { kind: "fresh", slot: 3000, value: "a" },
+      { kind: "fresh", slot: 2990, value: "older" },
+      { kind: "fresh", slot: 3002, value: "c" },
+    ]);
+    const chain = rpcChain(conn as any, { sleep: noSleep });
+    await chain.readAccounts([key()]);
+    const r = await chain.readAccounts([key()]);
+    expect(r.value[0]!.data.toString()).toBe("c");
+    expect(r.slot).toBe(3002);
+  });
 });
