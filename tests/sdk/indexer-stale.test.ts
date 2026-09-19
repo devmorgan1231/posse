@@ -89,4 +89,19 @@ describe("indexer chain reader against a lagging node", () => {
     expect(calls).toHaveLength(1);
     expect(chain.staleStats().stale).toBe(0);
   });
+
+  it("getProgramAccounts below the floor is retried, not trusted", async () => {
+    let n = 0;
+    const conn = {
+      async getProgramAccounts() {
+        n++;
+        return { context: { slot: n === 1 ? 500 : n === 2 ? 400 : 600 }, value: [{ pubkey: new PublicKey(key()), account: acc(Buffer.alloc(0)) }] };
+      },
+    };
+    const chain = rpcChain(conn as any, { sleep: noSleep });
+    await chain.programAccounts(new PublicKey(key()));
+    const r = await chain.programAccounts(new PublicKey(key()));
+    expect(r.slot).toBe(600);
+    expect(n).toBe(3);
+  });
 });
