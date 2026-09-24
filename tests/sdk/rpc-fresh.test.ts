@@ -50,6 +50,14 @@ describe("fresh reads (4 defenses)", () => {
     expect(r.value?.lamports).toBe(9);
     expect(f.asked).toHaveLength(3);
   });
+
+  it("context.slot going backwards is discarded and re-read", async () => {
+    const floor = new SlotFloor();
+    floor.raise(200);
+    const f = scriptedConnection([{ ctx: 150, clock: 150, lamports: 1 }, { ctx: 201, clock: 201, lamports: 2 }]);
+    const r = await readAccountFresh(f.conn, floor, KEY, { sleep: noSleep });
+    expect(r.value?.lamports).toBe(2);
+  });
 });
 
 function statusConn(script: { statuses: ((SignatureStatus | null)[] | { slot: number; value: (SignatureStatus | null)[] })[]; height: number }) {
