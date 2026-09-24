@@ -43,6 +43,13 @@ describe("fresh reads (4 defenses)", () => {
     expect(f.asked).toEqual([90]);
     expect(floor.slot).toBe(100);
   });
+
+  it("-32016 (node behind minContextSlot) -> waits and retries, never takes an old answer", async () => {
+    const f = scriptedConnection([{ code: -32016 }, { code: -32016 }, { ctx: 120, clock: 120, lamports: 9 }]);
+    const r = await readAccountFresh(f.conn, new SlotFloor(), KEY, { sleep: noSleep });
+    expect(r.value?.lamports).toBe(9);
+    expect(f.asked).toHaveLength(3);
+  });
 });
 
 function statusConn(script: { statuses: ((SignatureStatus | null)[] | { slot: number; value: (SignatureStatus | null)[] })[]; height: number }) {
