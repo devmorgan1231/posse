@@ -58,6 +58,12 @@ describe("fresh reads (4 defenses)", () => {
     const r = await readAccountFresh(f.conn, floor, KEY, { sleep: noSleep });
     expect(r.value?.lamports).toBe(2);
   });
+
+  it("Clock sentinel: fresh context.slot on an old bank is discarded", async () => {
+    const f = scriptedConnection([{ ctx: 50_000, clock: 20_000, lamports: 1 }, { ctx: 50_001, clock: 50_000, lamports: 2 }]);
+    const r = await readAccountFresh(f.conn, new SlotFloor(), KEY, { sleep: noSleep });
+    expect(r.value?.lamports).toBe(2);
+  });
 });
 
 function statusConn(script: { statuses: ((SignatureStatus | null)[] | { slot: number; value: (SignatureStatus | null)[] })[]; height: number }) {
