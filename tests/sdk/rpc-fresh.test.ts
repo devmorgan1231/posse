@@ -64,6 +64,15 @@ describe("fresh reads (4 defenses)", () => {
     const r = await readAccountFresh(f.conn, new SlotFloor(), KEY, { sleep: noSleep });
     expect(r.value?.lamports).toBe(2);
   });
+
+  it("gives up with a typed error when every answer is stale", async () => {
+    const f = scriptedConnection([{ ctx: 50_000, clock: 20_000, lamports: 1 }]);
+    await expect(readAccountFresh(f.conn, new SlotFloor(), KEY, { sleep: noSleep, attempts: 3 })).rejects.toBeInstanceOf(StaleRpcSnapshot);
+    const g = scriptedConnection([{ ctx: 10, clock: 10, lamports: 1 }]);
+    const floor = new SlotFloor();
+    floor.raise(99);
+    await expect(readAccountFresh(g.conn, floor, KEY, { sleep: noSleep, attempts: 2 })).rejects.toBeInstanceOf(StaleReadError);
+  });
 });
 
 function statusConn(script: { statuses: ((SignatureStatus | null)[] | { slot: number; value: (SignatureStatus | null)[] })[]; height: number }) {
