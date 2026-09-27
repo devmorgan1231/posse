@@ -100,4 +100,9 @@ function statusConn(script: { statuses: ((SignatureStatus | null)[] | { slot: nu
 const st = (over: Partial<SignatureStatus>): SignatureStatus => ({ slot: 10, confirmations: 1, err: null, confirmationStatus: "confirmed", ...over });
 
 describe("settle (no negative verdict from one read)", () => {
+  it("landed as soon as a signature is confirmed without error", async () => {
+    const c = statusConn({ statuses: [[null], [st({})]], height: 1 });
+    const floor = new SlotFloor();
+    expect(await resolveSignatures(c.conn, floor, ["sigA"], 100, { sleep: noSleep })).toMatchObject({ state: "landed", signature: "sigA" });
+  });
 });
