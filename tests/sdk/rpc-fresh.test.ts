@@ -73,6 +73,12 @@ describe("fresh reads (4 defenses)", () => {
     floor.raise(99);
     await expect(readAccountFresh(g.conn, floor, KEY, { sleep: noSleep, attempts: 2 })).rejects.toBeInstanceOf(StaleReadError);
   });
+
+  it("control: without the floor and the sentinel the stale answer is accepted (the guards are what protect)", async () => {
+    const f = scriptedConnection([{ ctx: 50_000, clock: 20_000, lamports: 1 }]);
+    const r = await readAccountFresh(f.conn, new SlotFloor(), KEY, { sleep: noSleep, clock: false });
+    expect(r.value?.lamports).toBe(1);
+  });
 });
 
 function statusConn(script: { statuses: ((SignatureStatus | null)[] | { slot: number; value: (SignatureStatus | null)[] })[]; height: number }) {
