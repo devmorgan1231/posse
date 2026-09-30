@@ -116,4 +116,9 @@ describe("settle (no negative verdict from one read)", () => {
     expect(await resolveSignatures(c.conn, new SlotFloor(), ["sigA"], 100, { sleep: noSleep, tries: 4 })).toEqual({ state: "dropped" });
     expect(c.reads()).toBe(5);
   });
+
+  it("a late landing seen by the final re-check is landed, not dropped", async () => {
+    const c = statusConn({ statuses: [[null], [null], [null], [null], [st({})]], height: 101 });
+    expect(await resolveSignatures(c.conn, new SlotFloor(), ["sigA"], 100, { sleep: noSleep, tries: 4 })).toMatchObject({ state: "landed" });
+  });
 });
