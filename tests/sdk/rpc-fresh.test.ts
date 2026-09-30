@@ -110,4 +110,10 @@ describe("settle (no negative verdict from one read)", () => {
     const c = statusConn({ statuses: [[st({ confirmationStatus: "processed", err: { InstructionError: [0, "x"] } })]], height: 50 });
     expect(await resolveSignatures(c.conn, new SlotFloor(), ["sigA"], 100, { sleep: noSleep })).toEqual({ state: "pending" });
   });
+
+  it("dropped only after several reads, an expired blockhash and one more empty read", async () => {
+    const c = statusConn({ statuses: [[null]], height: 101 });
+    expect(await resolveSignatures(c.conn, new SlotFloor(), ["sigA"], 100, { sleep: noSleep, tries: 4 })).toEqual({ state: "dropped" });
+    expect(c.reads()).toBe(5);
+  });
 });
