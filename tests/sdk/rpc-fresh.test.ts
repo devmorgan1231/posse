@@ -105,4 +105,9 @@ describe("settle (no negative verdict from one read)", () => {
     const floor = new SlotFloor();
     expect(await resolveSignatures(c.conn, floor, ["sigA"], 100, { sleep: noSleep })).toMatchObject({ state: "landed", signature: "sigA" });
   });
+
+  it("processed-only is not final; unseen with a valid blockhash stays pending", async () => {
+    const c = statusConn({ statuses: [[st({ confirmationStatus: "processed", err: { InstructionError: [0, "x"] } })]], height: 50 });
+    expect(await resolveSignatures(c.conn, new SlotFloor(), ["sigA"], 100, { sleep: noSleep })).toEqual({ state: "pending" });
+  });
 });
