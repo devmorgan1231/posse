@@ -129,4 +129,12 @@ describe("settle (no negative verdict from one read)", () => {
     const both = statusConn({ statuses: [[failed, failed]], height: 50 });
     expect(await resolveSignatures(both.conn, new SlotFloor(), ["a", "b"], 100, { sleep: noSleep })).toMatchObject({ state: "failed", signature: "a" });
   });
+
+  it("status answers from behind the floor are re-read (monotonic check on getSignatureStatuses)", async () => {
+    const c = statusConn({ statuses: [{ slot: 10, value: [null] }, { slot: 3000, value: [st({})] }], height: 1 });
+    const floor = new SlotFloor();
+    floor.raise(2000);
+    const r = await readStatusesFresh(c.conn, floor, ["x"], { sleep: noSleep });
+    expect(r.slot).toBe(3000);
+  });
 });
