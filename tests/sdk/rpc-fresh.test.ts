@@ -121,4 +121,12 @@ describe("settle (no negative verdict from one read)", () => {
     const c = statusConn({ statuses: [[null], [null], [null], [null], [st({})]], height: 101 });
     expect(await resolveSignatures(c.conn, new SlotFloor(), ["sigA"], 100, { sleep: noSleep, tries: 4 })).toMatchObject({ state: "landed" });
   });
+
+  it("a resend that can still land keeps a failed sibling open; all siblings final+failed is failed", async () => {
+    const failed = st({ err: { InstructionError: [0, "x"] } });
+    const open = statusConn({ statuses: [[failed, null]], height: 50 });
+    expect(await resolveSignatures(open.conn, new SlotFloor(), [{ signature: "a", lastValidBlockHeight: 100 }, { signature: "b", lastValidBlockHeight: 200 }], 0, { sleep: noSleep })).toEqual({ state: "pending" });
+    const both = statusConn({ statuses: [[failed, failed]], height: 50 });
+    expect(await resolveSignatures(both.conn, new SlotFloor(), ["a", "b"], 100, { sleep: noSleep })).toMatchObject({ state: "failed", signature: "a" });
+  });
 });
