@@ -137,4 +137,9 @@ describe("settle (no negative verdict from one read)", () => {
     const r = await readStatusesFresh(c.conn, floor, ["x"], { sleep: noSleep });
     expect(r.slot).toBe(3000);
   });
+
+  it("block height comes from getEpochInfo (Surfpool-safe) and respects the floor", async () => {
+    const c = statusConn({ statuses: [[null]], height: 777 });
+    expect(await readBlockHeightFresh(c.conn, new SlotFloor(), { sleep: noSleep })).toBe(777);
+  });
 });
