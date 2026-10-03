@@ -39,3 +39,8 @@ async function tx(c: Ctx, label: string, ixs: TransactionInstruction[], signers:
   c.stats.set(label, s);
   return r;
 }
+
+function ok(r: SendResult, what: string): SendResult {
+  if (!r.ok) assert.fail(`${what} failed: ${errorName(r.code)} ${r.err.slice(0, 200)} | ${r.logs.slice(-4).join(" | ")}`);
+  return r;
+}
