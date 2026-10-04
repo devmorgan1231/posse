@@ -44,3 +44,10 @@ function ok(r: SendResult, what: string): SendResult {
   if (!r.ok) assert.fail(`${what} failed: ${errorName(r.code)} ${r.err.slice(0, 200)} | ${r.logs.slice(-4).join(" | ")}`);
   return r;
 }
+
+function rejects(r: SendResult, expected: string | number, what: string) {
+  const code = typeof expected === "number" ? expected : POSSE_ERRORS[expected];
+  assert.ok(code !== undefined, `unknown error name ${expected}`);
+  assert.equal(r.ok, false, `${what}: expected rejection ${expected}, but it succeeded`);
+  assert.equal(r.code, code, `${what}: expected ${expected} (${code}), got ${errorName(r.code)} | ${r.err.slice(0, 160)}`);
+}
