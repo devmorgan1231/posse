@@ -51,3 +51,9 @@ function rejects(r: SendResult, expected: string | number, what: string) {
   assert.equal(r.ok, false, `${what}: expected rejection ${expected}, but it succeeded`);
   assert.equal(r.code, code, `${what}: expected ${expected} (${code}), got ${errorName(r.code)} | ${r.err.slice(0, 160)}`);
 }
+
+async function posseOf(c: Ctx, k: PublicKey): Promise<PosseAccount> {
+  const d = await c.chain.data(k);
+  assert.ok(d, "posse account missing");
+  return decodeAccount("Posse", d);
+}
