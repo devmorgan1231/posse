@@ -57,3 +57,8 @@ async function posseOf(c: Ctx, k: PublicKey): Promise<PosseAccount> {
   assert.ok(d, "posse account missing");
   return decodeAccount("Posse", d);
 }
+async function dispOf(c: Ctx, posse: PublicKey): Promise<DispositionAccount> {
+  const d = await c.chain.data(pda.disposition(posse));
+  assert.ok(d, "disposition missing");
+  return decodeAccount("Disposition", d);
+}
