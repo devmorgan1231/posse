@@ -77,3 +77,12 @@ async function assertVault(c: Ctx, posse: PublicKey, pool: bigint, what: string)
   assert.ok(p.vaultRent > 0n, `${what}: vault rent reserve not recorded`);
   assert.equal(v, p.vaultRent + pool, `${what}: vault ${v} != rent ${p.vaultRent} + pool ${pool}`);
 }
+
+interface Made {
+  posse: PublicKey;
+  mint: PublicKey;
+  seller: Keypair;
+  organizer: Keypair;
+  royalty: Keypair;
+  closesAt: number;
+}
