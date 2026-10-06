@@ -62,3 +62,11 @@ async function dispOf(c: Ctx, posse: PublicKey): Promise<DispositionAccount> {
   assert.ok(d, "disposition missing");
   return decodeAccount("Disposition", d);
 }
+async function rentOf(c: Ctx, k: PublicKey): Promise<bigint> {
+  return c.chain.rentExempt((await c.chain.data(k))?.length ?? 0);
+}
+const delta = async (c: Ctx, k: PublicKey, f: () => Promise<unknown>) => {
+  const b = await c.chain.lamports(k);
+  await f();
+  return (await c.chain.lamports(k)) - b;
+};
