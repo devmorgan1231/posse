@@ -70,3 +70,10 @@ const delta = async (c: Ctx, k: PublicKey, f: () => Promise<unknown>) => {
   await f();
   return (await c.chain.lamports(k)) - b;
 };
+
+async function assertVault(c: Ctx, posse: PublicKey, pool: bigint, what: string) {
+  const p = await posseOf(c, posse);
+  const v = await c.chain.lamports(pda.vault(posse));
+  assert.ok(p.vaultRent > 0n, `${what}: vault rent reserve not recorded`);
+  assert.equal(v, p.vaultRent + pool, `${what}: vault ${v} != rent ${p.vaultRent} + pool ${pool}`);
+}
