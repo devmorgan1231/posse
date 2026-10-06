@@ -86,3 +86,45 @@ interface Made {
   royalty: Keypair;
   closesAt: number;
 }
+
+async function makePosse(
+  c: Ctx,
+  o: {
+    target?: bigint;
+    maxPrice?: bigint;
+    closesIn?: number;
+    exitKind?: 0 | 1;
+    exitDay?: number;
+    exitPrice?: bigint;
+    exitHours?: number;
+    royaltyBps?: number;
+    royaltyTo?: PublicKey;
+    mint?: PublicKey;
+    seller?: Keypair;
+  } = {},
+): Promise<Made> {
+  const organizer = await c.chain.wallet(5);
+  const seller = o.seller ?? (await c.chain.wallet(5));
+  const royalty = await c.chain.wallet(1);
+  const mint = o.mint ?? (await c.chain.createNft(seller.publicKey));
+  const now = await c.chain.now();
+  const closesAt = now + (o.closesIn ?? 7 * 86_400);
+  c.nonce += 1n;
+  const made = ix.createPosse({
+    organizer: organizer.publicKey,
+    mint,
+    nonce: c.nonce,
+    seller: seller.publicKey,
+    royaltyRecipient: o.royaltyTo ?? royalty.publicKey,
+    royaltyBps: o.royaltyBps ?? 500,
+    targetLamports: o.target ?? 10n * SOL,
+    maxPriceLamports: o.maxPrice ?? 9n * SOL + SOL / 2n,
+    closesAt: BigInt(closesAt),
+    exitKind: o.exitKind ?? 0,
+    exitDay: o.exitDay ?? 0,
+    exitPriceLamports: o.exitPrice ?? 12n * SOL,
+    exitHours: o.exitHours ?? ((o.exitKind ?? 0) === 0 ? 1 : 0),
+  });
+  ok(await tx(c, "create_posse", [made.ix], [organizer], organizer), "create_posse");
+  return { posse: made.posse, mint, seller, organizer, royalty, closesAt };
+}
