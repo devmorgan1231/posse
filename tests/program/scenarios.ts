@@ -128,3 +128,22 @@ async function makePosse(
   ok(await tx(c, "create_posse", [made.ix], [organizer], organizer), "create_posse");
   return { posse: made.posse, mint, seller, organizer, royalty, closesAt };
 }
+
+const chip = (c: Ctx, who: Keypair, posse: PublicKey, amount: bigint) => tx(c, "contribute", [ix.contribute(who.publicKey, posse, amount)], [who]);
+const list = (c: Ctx, seller: Keypair, mint: PublicKey, ask: bigint) => tx(c, "list_asset", [ix.listAsset(seller.publicKey, mint, ask)], [seller]);
+const execute = (c: Ctx, caller: Keypair, m: Made, over: { listingSeller?: PublicKey; listingMint?: PublicKey; payTo?: PublicKey; feeWallet?: PublicKey } = {}) =>
+  tx(
+    c,
+    "execute_purchase",
+    [
+      ix.executePurchase({
+        caller: caller.publicKey,
+        posse: m.posse,
+        feeWallet: over.feeWallet ?? c.feeWallet.publicKey,
+        listingSeller: over.listingSeller ?? m.seller.publicKey,
+        listingMint: over.listingMint ?? m.mint,
+        payTo: over.payTo,
+      }),
+    ],
+    [caller],
+  );
