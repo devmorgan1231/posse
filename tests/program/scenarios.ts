@@ -147,3 +147,13 @@ const execute = (c: Ctx, caller: Keypair, m: Made, over: { listingSeller?: Publi
     ],
     [caller],
   );
+
+async function fund(c: Ctx, m: Made, amounts: bigint[]): Promise<Keypair[]> {
+  const ws: Keypair[] = [];
+  for (const a of amounts) {
+    const w = await c.chain.wallet(Number(a / SOL) + 2);
+    ok(await chip(c, w, m.posse, a), "contribute");
+    ws.push(w);
+  }
+  return ws;
+}
