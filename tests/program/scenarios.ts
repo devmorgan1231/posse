@@ -157,3 +157,9 @@ async function fund(c: Ctx, m: Made, amounts: bigint[]): Promise<Keypair[]> {
   }
   return ws;
 }
+
+async function settleIx(c: Ctx, caller: Keypair, m: Made) {
+  const p = await posseOf(c, m.posse);
+  const d = await dispOf(c, m.posse);
+  return ix.settleAuction({ caller: caller.publicKey, posse: m.posse, p, d, feeWallet: c.feeWallet.publicKey });
+}
