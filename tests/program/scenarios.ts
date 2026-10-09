@@ -163,3 +163,26 @@ async function settleIx(c: Ctx, caller: Keypair, m: Made) {
   const d = await dispOf(c, m.posse);
   return ix.settleAuction({ caller: caller.publicKey, posse: m.posse, p, d, feeWallet: c.feeWallet.publicKey });
 }
+
+export async function setup(chain: Chain, log: (s: string) => void): Promise<Ctx> {
+  const feeWallet = await chain.wallet(1);
+  const c: Ctx = { chain, admin: chain.admin, feeWallet, log, stats: new Map(), nonce: BigInt(Date.now()) * 1000n };
+  const intruder = await chain.wallet(2);
+  rejects(
+    await tx(c, "initialize_config", [ix.initializeConfig(intruder.publicKey, intruder.publicKey, 50, 50, 200)], [intruder], intruder),
+    "NotUpgradeAuthority",
+    "initialize_config by a non-authority",
+  );
+  rejects(
+    await tx(c, "initialize_config", [ix.initializeConfig(c.admin.publicKey, feeWallet.publicKey, 50, 50, 1001)], [c.admin], c.admin),
+    "FeeAboveCap",
+    "initialize_config with max fee above the 10% ceiling",
+  );
+  ok(await tx(c, "initialize_config", [ix.initializeConfig(c.admin.publicKey, feeWallet.publicKey, 50, 50, 200)], [c.admin], c.admin), "initialize_config");
+  const cfg = decodeAccount("Config", (await chain.data(pda.config()))!);
+  assert.equal(cfg.admin, c.admin.publicKey.toBase58());
+  assert.equal(cfg.feeWallet, feeWallet.publicKey.toBase58());
+  assert.deepEqual([cfg.executionFeeBps, cfg.settlementFeeBps, cfg.maxFeeBps, cfg.paused], [50, 50, 200, false]);
+  log(`config admin=${cfg.admin.slice(0, 6)} fee_wallet=${cfg.feeWallet.slice(0, 6)} exec=50bps settle=50bps max=200bps`);
+  return c;
+}
