@@ -27,3 +27,21 @@ flowchart LR
 
 There is no server co-signer in any instruction. A user transaction is signed by the user's wallet alone. Instructions that advance a posse on time are permissionless, so the posse does not depend on any operator being online.
 
+## Client (`sdk/`)
+
+- `program.ts`: program ID from the checked-in IDL, PDA derivation, raw instruction encoding with Anchor's `BorshCoder`, account, event and error decoding, and the lamport math used by the program (`feeOf`, `shareOf`, `headroomOf`, `minNextBid`). It contains no secrets and no RPC URLs and can run in a browser.
+- `instructions.ts`: one typed builder per instruction. Each derives its PDAs and associated token accounts; callers pass only the keys that are real choices.
+- `tx.ts`: puts `SetComputeUnitLimit` and, when given, `SetComputeUnitPrice` first, so wallets do not rewrite the message. Compute limits come from measured usage plus headroom. `assertTxBudget` keeps every transaction at or under 1030 bytes so a wallet can append its own instructions.
+- `reader.ts` and `rpc/`: reads that decide or record something.
+
+### Stale-safe reads
+
+An RPC endpoint is often several nodes at different slots, and a plain read can return state from before a transaction that already landed. `sdk/rpc` applies four defenses:
+
+1. Explicit commitment (`confirmed` by default).
+2. `minContextSlot` set to the highest slot already observed. A node that is behind answers `-32016`; the reader waits and retries instead of accepting older state.
+3. The response `context.slot` must never go backwards.
+4. The Clock sysvar is read inside the same `getMultipleAccounts` call as the accounts. A node whose bank is far behind its reported slot is rejected.
+
+`resolveSignatures` never reports a transaction as dropped from a single empty read: it requires several reads, an expired blockhash and one more read after that.
+
