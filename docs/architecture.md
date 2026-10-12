@@ -45,3 +45,11 @@ An RPC endpoint is often several nodes at different slots, and a plain read can 
 
 `resolveSignatures` never reports a transaction as dropped from a single empty read: it requires several reads, an expired blockhash and one more read after that.
 
+## Indexer (`indexer/`)
+
+- `chain.ts`: discovers program accounts with `getProgramAccounts` filtered by discriminator, reads their data through the stale-safe reader, pages signatures for the program, and extracts events from each transaction. Events are taken from the program's own `emit_cpi` inner instructions; if a transaction has none, `Program data:` log lines inside the program's invocation are used.
+- `codec.ts`: account and event layouts with Anchor discriminators. Accounts are read by known prefix, so appended fields never break the reader.
+- `decoder.ts`: one interface over two decoders, the layout codec and Anchor's `BorshCoder` from the IDL, both normalized to the same shapes. The tests encode every account and event and require both decoders to agree, which catches any drift between the program and the indexer.
+
+The indexer service built on these modules writes posses, contributions, bids and settlements into a database and serves the public settlement ledger at https://posse.one.
+
