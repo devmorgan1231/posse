@@ -53,3 +53,6 @@ An RPC endpoint is often several nodes at different slots, and a plain read can 
 
 The indexer service built on these modules writes posses, contributions, bids and settlements into a database and serves the public settlement ledger at https://posse.one.
 
+## Tests
+
+`tests/program/chain.ts` deploys the compiled `.so` into LiteSVM through the upgradeable loader and writes a test upgrade authority into ProgramData, so `initialize_config` runs exactly as on a real cluster. `tests/program/scenarios.ts` holds the protocol scenarios, written against a small chain interface. Each scenario checks balances, account bytes and events after every step and includes the rejected cases next to the successful ones.
