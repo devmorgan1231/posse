@@ -24,3 +24,34 @@ Every account with data carries a reserved tail so fields can be appended in an 
 
 Share is never stored. While raising it is `chip / target`; after a purchase it is `chip / raised`, computed at claim time.
 
+## State machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Open: create_posse
+    Open --> Raising: first chip
+    Open --> Funded: one chip fills the target
+    Raising --> Funded: raised reaches target
+    Funded --> Bought: execute_purchase
+    Bought --> Held: issue_shares
+    Held --> Disposing: start_disposition, now at or after bought_at plus exit_day
+    Disposing --> Settled: settle_auction or buy_listed
+    Disposing --> Held: no qualifying bid or frozen custody
+    Open --> Refunding: now past closes_at
+    Raising --> Refunding: now past closes_at
+    Funded --> Refunding: now past closes_at
+    Settled --> [*]: claim_proceeds then close_posse
+    Refunding --> [*]: claim_refund then close_posse
+```
+
+| Status | Value |
+|---|---|
+| Open | 0 |
+| Raising | 1 |
+| Funded | 2 |
+| Bought | 3 |
+| Held | 4 |
+| Disposing | 5 |
+| Settled | 6 |
+| Refunding | 7 |
+
