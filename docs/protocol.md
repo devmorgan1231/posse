@@ -80,3 +80,9 @@ stateDiagram-v2
 
 A payout too small to make an empty recipient account rent-exempt is skipped rather than failing the whole transaction; that amount stays in the vault for the contributors.
 
+## Events
+
+Every instruction that changes state emits an event through `emit_cpi`, so indexers can read events from inner instructions even when logs are truncated:
+
+`ConfigUpdated`, `PosseCreated`, `ChippedIn`, `Funded`, `Withdrew`, `AssetListed`, `ListingCancelled`, `Purchased`, `SharesIssued`, `Expired`, `DispositionStarted`, `BidPlaced`, `Settled`, `DispositionFailed`, `ReturnedClaimed`, `ProceedsClaimed`, `RefundClaimed`, `PosseClosed`.
+
