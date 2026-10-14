@@ -86,3 +86,6 @@ Every instruction that changes state emits an event through `emit_cpi`, so index
 
 `ConfigUpdated`, `PosseCreated`, `ChippedIn`, `Funded`, `Withdrew`, `AssetListed`, `ListingCancelled`, `Purchased`, `SharesIssued`, `Expired`, `DispositionStarted`, `BidPlaced`, `Settled`, `DispositionFailed`, `ReturnedClaimed`, `ProceedsClaimed`, `RefundClaimed`, `PosseClosed`.
 
+## Errors
+
+Error codes start at 6000 in the order of `programs/posse_vault/src/errors.rs`. The client maps codes to names with `errorCode` and `errorName` in `sdk/program.ts`.
