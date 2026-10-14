@@ -55,3 +55,28 @@ stateDiagram-v2
 | Settled | 6 |
 | Refunding | 7 |
 
+## Instructions
+
+| Instruction | Signer | Preconditions | Effect |
+|---|---|---|---|
+| `initialize_config` | program upgrade authority | Config does not exist; fees <= `max_fee_bps` <= 1000 | Creates Config. |
+| `update_config` | Config admin | new fees <= `max_fee_bps` | Fee wallet, fee rates, admin, pause. Existing posses keep their own fees. |
+| `create_posse` | organizer | not paused; mint decimals 0; target and max price > 0; deadline in the future; valid exit terms; royalty <= 10000 bps | Creates the posse and its vault, status Open. |
+| `contribute` | contributor | Open or Raising; not past the deadline; headroom > 0; not paused | Accepts `min(amount, headroom)`. Raised reaching the target sets Funded. |
+| `withdraw` | contributor | Open or Raising | Returns the full chip and closes the contribution. |
+| `list_asset` | seller | seller holds the asset; NFT checks pass | Moves the asset into the listing escrow with an ask. |
+| `cancel_listing` | seller | listing open | Returns the asset and closes the listing. |
+| `execute_purchase` | anyone | Funded; not past the deadline; listing open for the posse's mint and seller; ask <= max price; raised >= ask + fee; escrow holds exactly one | Pays the seller and fee wallet, moves the asset to custody, records the over-raise. Status Bought. |
+| `issue_shares` | anyone | Bought | Status Held. |
+| `expire` | anyone | Open, Raising or Funded; past the deadline | Status Refunding. |
+| `start_disposition` | anyone | Held; hold period over | Creates the disposition. Status Disposing. |
+| `bid` | bidder | auction live; amount >= reserve; amount >= high bid + max(reserve / 100, 0.01 SOL) | Escrows the bid and refunds the previous high bidder in the same transaction. |
+| `settle_auction` | anyone | auction ended; not settled | Winning bid: asset to the winner, royalty and settlement fee paid, net left in the vault, status Settled. No bid, or a frozen custody account: the bid is refunded and the posse returns to Held. |
+| `buy_listed` | buyer | fixed-price disposition live | Buyer pays the exit price and takes the asset. Royalty and fee paid, status Settled. |
+| `claim_returned` | contributor | Bought, Held, Disposing or Settled; over-raise > 0; not yet claimed | Pays `floor(returned * chip / raised)`. |
+| `claim_proceeds` | contributor | Settled; final claim not taken | Pays `floor(net * chip / raised)` plus any unclaimed over-raise share, closes the contribution. |
+| `claim_refund` | contributor | Refunding, or past the deadline without a purchase | Pays the full chip, closes the contribution. The first call after the deadline sets Refunding. |
+| `close_posse` | anyone | Settled or Refunding; every contribution took its final claim | Dust to the fee wallet, rent to the organizer and the disposition rent payer. |
+
+A payout too small to make an empty recipient account rent-exempt is skipped rather than failing the whole transaction; that amount stays in the vault for the contributors.
+
