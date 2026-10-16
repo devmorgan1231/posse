@@ -44,3 +44,6 @@ npm run test:mutation
 
 Expected result: `mutation mutants=12 caught=12 verdict=PASS`.
 
+## Off-chain components
+
+Off-chain services hold no authority over posse funds. The crank wallet can only call permissionless instructions. The indexer only reads. The fee wallet receives fees and nothing else.
