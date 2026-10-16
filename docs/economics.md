@@ -21,3 +21,11 @@ A posse raises 10 SOL and buys at an ask of 9 SOL.
 - Royalty: 0.6 SOL. Settlement fee: 0.06 SOL. Net: 11.34 SOL.
 - A contributor who chipped 2.5 SOL owns 25% and claims 2.835 SOL of the net plus 0.23875 SOL of the over-raise.
 
+## Buyback and burn
+
+- 30% of every fee that reaches the fee wallet funds market buys of $POSSE. Every token bought is burned in the same run.
+- 50% of the launchpad creator fees earned on $POSSE are used the same way: claimed, used to buy $POSSE, and burned.
+- A run starts when the pooled amount reaches its threshold or a set interval passes, whichever comes first. Per-run, hourly and daily limits, slippage and price-impact limits apply; anything not spent carries over to the next run.
+- Every buy and burn is published with its Solscan transaction on the settlement ledger at https://posse.one.
+
+The buyback worker is an off-chain service. It holds no authority over posse vaults: it acts only on fees that have already been paid out to the fee wallet and on creator fees.
