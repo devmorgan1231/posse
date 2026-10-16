@@ -34,3 +34,13 @@
 | Frozen asset at settlement | A frozen custody account refunds the winning bid and returns the posse to Held instead of locking funds. |
 | Recipient that cannot receive | A payment too small to make an empty account rent-exempt is skipped and stays with the contributors, so one recipient cannot block settlement. |
 
+## Mutation testing
+
+Each invariant guard has a cargo feature (`mut-i1` to `mut-i12`) that switches only that guard off. `scripts/mutation-control.sh` builds each variant and runs the LiteSVM suite against it. The run passes only if, for every variant, the scenario that covers that invariant fails. The default build includes none of these features.
+
+```bash
+npm run test:mutation
+```
+
+Expected result: `mutation mutants=12 caught=12 verdict=PASS`.
+
