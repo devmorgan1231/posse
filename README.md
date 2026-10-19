@@ -360,16 +360,44 @@ Expected result: `mutation mutants=12 caught=12 verdict=PASS`.
 
 ```
 .
+├── .github/
+│   ├── workflows/ci.yml        fmt, clippy, anchor build, IDL drift, LiteSVM, mutants, typecheck, SDK tests
+│   ├── ISSUE_TEMPLATE/         bug and feature forms, security reports routed to SECURITY.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── CODEOWNERS
+│   └── dependabot.yml          npm, cargo and GitHub Actions updates
 ├── Anchor.toml
 ├── Cargo.toml
+├── rust-toolchain.toml         pinned host toolchain
+├── CHANGELOG.md
 ├── assets/                     banner and mark used in this README
 ├── programs/posse_vault/
 │   └── src/
-│       ├── lib.rs              instructions and account contexts
+│       ├── lib.rs              program entrypoint, delegates to instructions/
+│       ├── instructions/       one module per instruction: account context and handler
+│       │   ├── initialize_config.rs
+│       │   ├── update_config.rs
+│       │   ├── create_posse.rs
+│       │   ├── contribute.rs
+│       │   ├── withdraw.rs
+│       │   ├── list_asset.rs
+│       │   ├── cancel_listing.rs
+│       │   ├── execute_purchase.rs
+│       │   ├── crank.rs        shared context for issue_shares and expire
+│       │   ├── issue_shares.rs
+│       │   ├── expire.rs
+│       │   ├── start_disposition.rs
+│       │   ├── bid.rs
+│       │   ├── settle_auction.rs
+│       │   ├── buy_listed.rs
+│       │   ├── claim_returned.rs
+│       │   ├── claim_proceeds.rs
+│       │   ├── claim_refund.rs
+│       │   └── close_posse.rs
 │       ├── state.rs            accounts, seeds, constants
 │       ├── events.rs           emitted events
 │       ├── errors.rs           error codes
-│       └── util.rs             fee, share and transfer helpers
+│       └── util.rs             fee, share, transfer and sale settlement helpers
 ├── sdk/
 │   ├── program.ts              program id, PDAs, decoding, lamport math
 │   ├── instructions.ts         typed builders for all 18 instructions
