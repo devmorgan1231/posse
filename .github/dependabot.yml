@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      solana:
+        patterns:
+          - "@solana/*"
+          - "@coral-xyz/*"
+          - litesvm
+    ignore:
+      - dependency-name: "@coral-xyz/anchor"
+        update-types: [version-update:semver-major, version-update:semver-minor]
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: anchor-lang
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: anchor-spl
+        update-types: [version-update:semver-major, version-update:semver-minor]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
