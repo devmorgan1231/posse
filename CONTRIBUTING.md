@@ -2,7 +2,7 @@
 
 ## Setup
 
-Rust with the Solana toolchain (Solana CLI 3.0), Anchor CLI 0.31.1 and Node.js 22.
+Rust 1.95.0 (pinned in `rust-toolchain.toml`), Solana CLI 3.0.0, Anchor CLI 0.31.1 and Node.js 22.
 
 ```bash
 npm ci
@@ -13,6 +13,7 @@ anchor build
 
 ```bash
 cargo fmt --all -- --check
+cargo clippy --all-targets -- -D warnings
 npm run typecheck
 npm test
 ```
