@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in the program, the SDK or the indexer layer behaves differently from the documented protocol.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Security problems go through SECURITY.md, not this form.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - programs/posse_vault
+        - sdk
+        - indexer
+        - tests or CI
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: The instruction or function involved, the inputs, and the result you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: Point to the relevant part of docs/protocol.md if it applies.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: A LiteSVM scenario for tests/program/scenarios.ts, a failing SDK test, or a devnet transaction signature.
+      render: text
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Commit, Solana CLI, Anchor CLI and Node.js versions.
